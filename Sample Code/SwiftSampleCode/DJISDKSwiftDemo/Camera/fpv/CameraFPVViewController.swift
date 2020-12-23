@@ -197,7 +197,7 @@ class CameraFPVViewController: UIViewController {
     }
     
     func prepareWaypointV2MissionForM300(completion: @escaping (DJIWaypointV2MissionOperator?) -> ()) {
-        let operatorV2 = DJIWaypointV2MissionOperator()
+        let missionOperator = DJIWaypointV2MissionOperator()
         let listCoords = [
             CLLocationCoordinate2D(latitude: 36.290506, longitude: 139.455655),
             CLLocationCoordinate2D(latitude: 36.290384, longitude: 139.455753),
@@ -496,11 +496,11 @@ class CameraFPVViewController: UIViewController {
         
         let currentMissionV2 = DJIWaypointV2Mission(mission: waypointV2Mission)
         
-        operatorV2.load(currentMissionV2) { (error) in
+        missionOperator.load(currentMissionV2) { (error) in
             if error == nil {
                 // MARK: - Set up listener
                 // MARK: - Mission V2 listener toUploadEvent
-                operatorV2.addListener(toUploadEvent: self, with: DispatchQueue.main, andBlock: { [weak self] (event) in
+                missionOperator.addListener(toUploadEvent: self, with: DispatchQueue.main, andBlock: { [weak self] (event) in
                     if event.error != nil {
                         let errCode = String((event.error! as NSError).code)
                         print("aaaa: Upload V2 failed: \(errCode) - \(event.error.debugDescription)")
@@ -527,7 +527,7 @@ class CameraFPVViewController: UIViewController {
                 })
 
                 // MARK: - Mission's Waypoint Actions V2 listener toActionUploadEvent
-                operatorV2.addListener(toActionUploadEvent: self, with: DispatchQueue.main, andBlock: { [weak self] (event) in
+                missionOperator.addListener(toActionUploadEvent: self, with: DispatchQueue.main, andBlock: { [weak self] (event) in
                     guard let this = self else { return }
                     if event.error != nil {
                         let errCode = String((event.error! as NSError).code)
@@ -535,7 +535,7 @@ class CameraFPVViewController: UIViewController {
                     }
                     
                     if event.currentState == .readyToUpload {
-                        operatorV2.uploadWaypointActions(this.waypointActionsV2, withCompletion: { (error) in
+                        missionOperator.uploadWaypointActions(this.waypointActionsV2, withCompletion: { (error) in
                             if error == nil {
                                 print("aaaa: Upload Action V2 success!!")
                             } else {
@@ -566,7 +566,7 @@ class CameraFPVViewController: UIViewController {
                 })
 
                 // MARK: - Mission V2 listener toExecutionEvent
-                operatorV2.addListener(toExecutionEvent: self, with: DispatchQueue.main) { [weak self] (event) in
+                missionOperator.addListener(toExecutionEvent: self, with: DispatchQueue.main) { [weak self] (event) in
                     if event.error != nil {
                         let errCode = String((event.error! as NSError).code)
                         print("aaaa: Error code: \(errCode) - \(event.error.debugDescription)")
@@ -579,7 +579,7 @@ class CameraFPVViewController: UIViewController {
                 }
 
                 // MARK: - Mission V2 listener toActionExecutionEvent
-                operatorV2.addListener(toActionExecutionEvent: self, with: DispatchQueue.main) { (event) in
+                missionOperator.addListener(toActionExecutionEvent: self, with: DispatchQueue.main) { (event) in
                     if event.error != nil {
                         let errCode = String((event.error! as NSError).code)
                         print("aaaa: Error code: \(errCode) - \(event.error.debugDescription)")
@@ -590,7 +590,7 @@ class CameraFPVViewController: UIViewController {
                 }
 
                 // MARK: - Mission V2 listener toStopped
-                operatorV2.addListener(toStopped: self, with: DispatchQueue.main, andBlock: { [weak self] (error) in
+                missionOperator.addListener(toStopped: self, with: DispatchQueue.main, andBlock: { [weak self] (error) in
                     if error != nil {
                         let errCode = String((error! as NSError).code)
                         print("aaaa: Stop V2 mission failed: \(errCode) - \(error.debugDescription)")
@@ -600,7 +600,7 @@ class CameraFPVViewController: UIViewController {
                 })
 
                 // MARK: - Mission V2 listener toFinished
-                operatorV2.addListener(toFinished: self, with: DispatchQueue.main) { [weak self] (error) in
+                missionOperator.addListener(toFinished: self, with: DispatchQueue.main) { [weak self] (error) in
                     if error != nil {
                         let errCode = String((error! as NSError).code)
                         print("aaaa: Error code: \(errCode) - \(error!.localizedDescription)")
@@ -610,20 +610,20 @@ class CameraFPVViewController: UIViewController {
                 }
 
                 // MARK: - Mission V2 listener toStarted
-                operatorV2.addListener(toStarted: self, with: DispatchQueue.main) { [weak self] in
+                missionOperator.addListener(toStarted: self, with: DispatchQueue.main) { [weak self] in
                     print("aaaa: Mission Started")
                 }
                 
-                if let errorParam = operatorV2.loadedMission?.checkParameters() {
+                if let errorParam = missionOperator.loadedMission?.checkParameters() {
                     let errCode = String((errorParam as NSError).code)
                     print("aaaa: Error \(errCode) - \(errorParam.localizedDescription)")
                     completion(nil)
                     return
                 }
                 
-                operatorV2.downloadMission(completion: { (error) in
+                missionOperator.downloadMission(completion: { (error) in
                     if error == nil {
-                        if let downloadedMission = operatorV2.loadedMission {
+                        if let downloadedMission = missionOperator.loadedMission {
                             let missionValidity = downloadedMission.checkParameters()
                             if missionValidity != nil {
                                 print("aaaa: Error \(missionValidity!)")
@@ -634,10 +634,10 @@ class CameraFPVViewController: UIViewController {
                 
                 // MARK: - Upload mission to drone
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
-                    if operatorV2.currentState == .readyToUpload {
-                        operatorV2.uploadMission { (error) in
+                    if missionOperator.currentState == .readyToUpload {
+                        missionOperator.uploadMission { (error) in
                             if error == nil {
-                                completion(operatorV2)
+                                completion(missionOperator)
                             } else {
                                 completion(nil)
                             }
@@ -676,6 +676,15 @@ extension CameraFPVViewController: DJICameraDelegate {
     
     func camera(_ camera: DJICamera, didUpdateTemperatureData temperature: Float) {
         tempLabel.text = String(format: "%f", temperature)
+    }
+    
+    func camera(_ camera: DJICamera, didGenerateNewMediaFile newMedia: DJIMediaFile) {
+        switch newMedia.mediaType {
+        case .unknown:
+            print("aaaa: Unknown media type")
+        default:
+            print("aaaa: New media generated - type: \(newMedia.mediaType)")
+        }
     }
     
 }
