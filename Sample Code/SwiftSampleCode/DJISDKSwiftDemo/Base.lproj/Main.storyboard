@@ -520,40 +520,27 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="edA-NZ-nNs">
-                                <rect key="frame" x="490" y="0.0" width="157" height="122"/>
+                                <rect key="frame" x="537.5" y="0.0" width="109.5" height="70"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="srD-Pr-XwL">
-                                        <rect key="frame" x="0.0" y="0.0" width="157" height="122"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="srD-Pr-XwL">
+                                        <rect key="frame" x="0.0" y="0.0" width="109.5" height="70"/>
                                         <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6nG-HD-SP1">
-                                                <rect key="frame" x="0.0" y="0.0" width="157" height="30"/>
-                                                <state key="normal" title="Upload mission"/>
-                                                <connections>
-                                                    <action selector="uploadMissionBtnDidTapWithSender:" destination="dDf-ox-t1g" eventType="touchUpInside" id="UdD-k6-6fv"/>
-                                                </connections>
-                                            </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6BP-ms-PdF">
-                                                <rect key="frame" x="0.0" y="30" width="157" height="30"/>
-                                                <state key="normal" title="Upload actions"/>
-                                                <connections>
-                                                    <action selector="uploadMissionActionsBtnDidTapWithSender:" destination="dDf-ox-t1g" eventType="touchUpInside" id="Y2X-rc-Xkl"/>
-                                                </connections>
-                                            </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7E1-Nj-WGI">
-                                                <rect key="frame" x="0.0" y="60" width="157" height="30"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="109.5" height="28"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                                 <state key="normal" title="Start mission"/>
                                                 <connections>
                                                     <action selector="startMissionBtnDidTapWithSender:" destination="dDf-ox-t1g" eventType="touchUpInside" id="UCW-wI-Zxp"/>
                                                 </connections>
                                             </button>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Mission state: N/A" textAlignment="center" lineBreakMode="clip" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tIB-gr-Hnd">
-                                                <rect key="frame" x="0.0" y="90" width="157" height="16"/>
+                                                <rect key="frame" x="0.0" y="33" width="109.5" height="16"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Mission actions state: N/A" textAlignment="center" lineBreakMode="clip" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="D0r-Lc-PeF">
-                                                <rect key="frame" x="0.0" y="106" width="157" height="16"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Actions state: N/A" textAlignment="center" lineBreakMode="clip" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="D0r-Lc-PeF">
+                                                <rect key="frame" x="0.0" y="54" width="109.5" height="16"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>

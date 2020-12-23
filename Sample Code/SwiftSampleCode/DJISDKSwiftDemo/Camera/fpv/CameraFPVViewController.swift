@@ -22,6 +22,18 @@ class CameraFPVViewController: UIViewController {
     var needToSetMode = false
     var operatorV2: DJIWaypointV2MissionOperator?
     var waypointActionsV2 = [DJIWaypointV2Action]()
+    var flightController: DJIFlightController? {
+        guard let product = DJISDKManager.product() else {
+            return nil
+        }
+        
+        if product is DJIAircraft {
+            let flightController = (product as! DJIAircraft).flightController
+            flightController!.delegate = self
+            return flightController
+        }
+        return nil
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -82,11 +94,27 @@ class CameraFPVViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        prepareWaypointV2MissionForM300 { [unowned self] (preparedMission) in
-            if preparedMission != nil {
-                self.operatorV2 = preparedMission
-            } else {
-                print("aaaa: preparedMission has error!!")
+        
+        guard flightController != nil else {
+            print("aaaa: Flight controller is nil!!")
+            return
+        }
+        
+        if let rtkController = flightController!.rtk {
+            rtkController.delegate = self
+            rtkController.setEnabled(false) { [weak self] (error) in
+                if error == nil {
+                    print("aaaa: Set rtk success!")
+                } else {
+                    print("aaaa: Set rtk failed!")
+                }
+                self?.prepareWaypointV2MissionForM300 { (preparedMission) in
+                    if preparedMission != nil {
+                        self?.operatorV2 = preparedMission
+                    } else {
+                        print("aaaa: preparedMission has error!!")
+                    }
+                }
             }
         }
     }
@@ -149,36 +177,6 @@ class CameraFPVViewController: UIViewController {
                 let enabled = mode != .disabled
                 self?.tempSwitch.setOn(enabled, animated: true)
                 
-            }
-        }
-    }
-    
-    @IBAction func uploadMissionBtnDidTap(sender: UIButton) {
-        guard operatorV2 != nil else {
-            print("operatorV2 is nil")
-            return
-        }
-        
-        operatorV2!.uploadMission(completion: { (error) in
-            if error == nil {
-                print("aaaa: Upload mission to drone success!!!")
-            } else {
-                print("aaaa: Upload mission to drone failed!!!")
-            }
-        })
-    }
-    
-    @IBAction func uploadMissionActionsBtnDidTap(sender: UIButton) {
-        guard operatorV2 != nil else {
-            print("operatorV2 is nil")
-            return
-        }
-        
-        operatorV2!.uploadWaypointActions(waypointActionsV2) { (error) in
-            if error == nil {
-                print("aaaa: Upload mission actions to drone success!!!")
-            } else {
-                print("aaaa: Upload mission actions to drone failed!!!")
             }
         }
     }
@@ -693,4 +691,8 @@ extension CameraFPVViewController {
         }
         return nil
     }
+}
+
+extension CameraFPVViewController: DJIFlightControllerDelegate, DJIRTKDelegate {
+    
 }
