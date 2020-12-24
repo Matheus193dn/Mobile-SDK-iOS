@@ -653,6 +653,19 @@ class CameraFPVViewController: UIViewController {
     }
 }
 
+extension CameraFPVViewController {
+    fileprivate func fetchCamera() -> DJICamera? {
+        guard let product = DJISDKManager.product() else {
+            return nil
+        }
+        
+        if product is DJIAircraft || product is DJIHandheld {
+            return product.camera
+        }
+        return nil
+    }
+}
+
 /**
  *  DJICamera will send the live stream only when the mode is in DJICameraModeShootPhoto or DJICameraModeRecordVideo. Therefore, in order
  *  to demonstrate the FPV (first person view), we need to switch to mode to one of them.
@@ -687,21 +700,60 @@ extension CameraFPVViewController: DJICameraDelegate {
         }
     }
     
-}
-
-extension CameraFPVViewController {
-    fileprivate func fetchCamera() -> DJICamera? {
-        guard let product = DJISDKManager.product() else {
-            return nil
-        }
-        
-        if product is DJIAircraft || product is DJIHandheld {
-            return product.camera
-        }
-        return nil
+    func camera(_ camera: DJICamera, didUpdate storageState: DJICameraStorageState) {
+        print("bbbb: storageState location: \(storageState.location)")
     }
 }
 
-extension CameraFPVViewController: DJIFlightControllerDelegate, DJIRTKDelegate {
+extension CameraFPVViewController: DJIFlightControllerDelegate {
+    func flightController(_ fc: DJIFlightController, didUpdate state: DJIFlightControllerState) {
+        //
+    }
     
+    func flightController(_ fc: DJIFlightController, didUpdate imuState: DJIIMUState) {
+        //
+    }
+      
+    func flightController(_ fc: DJIFlightController, didUpdate information: DJIAirSenseSystemInformation) {
+        //
+    }
+    
+    func flightController(_ fc: DJIFlightController, didUpdate gravityCenterState: DJIGravityCenterState) {
+        //
+    }
+}
+
+extension CameraFPVViewController: DJIGimbalDelegate {
+    func gimbal(_ gimbal: DJIGimbal, didUpdate state: DJIGimbalState) {
+        //
+    }
+}
+
+extension CameraFPVViewController: DJIBatteryDelegate {
+    func battery(_ battery: DJIBattery, didUpdate state: DJIBatteryState) {
+        //
+    }
+}
+
+extension CameraFPVViewController: DJIRemoteControllerDelegate {
+    func remoteController(_ rc: DJIRemoteController, didUpdate batteryState: DJIRCBatteryState) {
+        //
+    }
+}
+
+extension CameraFPVViewController: DJIRTKDelegate {
+    func rtk(_ rtk: DJIRTK, didUpdate state: DJIRTKState) {
+        //
+    }
+}
+
+
+extension CameraFPVViewController: DJIRTKBaseStationDelegate {
+    func baseStation(_ baseStation: DJIRTKBaseStation, didUpdate state: DJIRTKBaseStationBatteryState) {
+        //
+    }
+    
+    func baseStation(_ baseStation: DJIRTKBaseStation, didUpdate state: DJIRTKBaseStationState) {
+        //
+    }
 }
