@@ -108,9 +108,9 @@ class CameraFPVViewController: UIViewController {
                 } else {
                     print("aaaa: Set rtk failed!")
                 }
-                self?.prepareWaypointV2MissionForM300 { (preparedMission) in
-                    if preparedMission != nil {
-                        self?.operatorV2 = preparedMission
+                self?.prepareWaypointV2MissionForM300 { (isCompleted) in
+                    if isCompleted {
+                        print("aaaa: preparedMission has completed!!")
                     } else {
                         print("aaaa: preparedMission has error!!")
                     }
@@ -196,8 +196,13 @@ class CameraFPVViewController: UIViewController {
         }
     }
     
-    func prepareWaypointV2MissionForM300(completion: @escaping (DJIWaypointV2MissionOperator?) -> ()) {
-        let missionOperator = DJIWaypointV2MissionOperator()
+    func prepareWaypointV2MissionForM300(completion: @escaping (Bool) -> ()) {
+        operatorV2 = DJIWaypointV2MissionOperator()
+        guard let missionOperator = operatorV2 else {
+            completion(false)
+            return
+        }
+        missionOperator.removeAllListeners()
         let listCoords = [
             CLLocationCoordinate2D(latitude: 36.290506, longitude: 139.455655),
             CLLocationCoordinate2D(latitude: 36.290384, longitude: 139.455753),
@@ -617,7 +622,7 @@ class CameraFPVViewController: UIViewController {
                 if let errorParam = missionOperator.loadedMission?.checkParameters() {
                     let errCode = String((errorParam as NSError).code)
                     print("aaaa: Error \(errCode) - \(errorParam.localizedDescription)")
-                    completion(nil)
+                    completion(false)
                     return
                 }
                 
@@ -637,17 +642,17 @@ class CameraFPVViewController: UIViewController {
                     if missionOperator.currentState == .readyToUpload {
                         missionOperator.uploadMission { (error) in
                             if error == nil {
-                                completion(missionOperator)
+                                completion(true)
                             } else {
-                                completion(nil)
+                                completion(false)
                             }
                         }
                     } else {
-                        completion(nil)
+                        completion(false)
                     }
                 }
             } else {
-                completion(nil)
+                completion(false)
             }
         }
     }
