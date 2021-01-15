@@ -64,7 +64,7 @@ class CameraFPVViewController: UIViewController {
                         if error != nil {
                             print("assignSource Failed - 1", error!.localizedDescription)
                         } else {
-                            completion?()
+                            print("assignSource Success - 1")
                         }
                     }
                 } else {
@@ -72,10 +72,34 @@ class CameraFPVViewController: UIViewController {
                         if error != nil {
                             print("assignSource Failed - 2", error!.localizedDescription)
                         } else {
-                            completion?()
+                            print("assignSource Success - 2")
                         }
                     }
                 }
+                
+                guard let camera = product.camera else {
+                    completion?()
+                    return
+                }
+                camera.getVideoStreamSource { (streamSource, error) in
+                    if error == nil {
+                        switch streamSource {
+                        case .wide:
+                            print("Set Camera Stream Source to Wide success!")                            
+                        default:
+                            camera.setCameraVideoStreamSource(.wide) { (error) in
+                                if error == nil {
+                                    print("Set Camera Stream Source to Wide success!")
+                                } else {
+                                    print("Set Camera Stream Source to Wide failed!")
+                                }
+                            }
+                        }
+                    } else {
+                        print("Get Camera Stream Source failed!")
+                    }
+                }   
+                completion?()
             }
         } else {
             if product.camera?.displayName == DJICameraDisplayNameMavic2ZoomCamera
