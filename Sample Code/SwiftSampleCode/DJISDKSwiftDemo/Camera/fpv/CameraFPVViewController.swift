@@ -639,9 +639,10 @@ class CameraFPVViewController: UIViewController {
                 }
 
                 // MARK: - Mission V2 listener toStarted
-                missionOperator.addListener(toStarted: self, with: DispatchQueue.main) { [weak self] in
-                    print("aaaa: Mission Started")
-                }
+                // NOTE: - App will crash when listen to this event
+                //missionOperator.addListener(toStarted: self, with: DispatchQueue.main) { [weak self] in
+                    //print("aaaa: Mission Started")
+                //}
                 
                 if let errorParam = missionOperator.loadedMission?.checkParameters() {
                     let errCode = String((errorParam as NSError).code)
