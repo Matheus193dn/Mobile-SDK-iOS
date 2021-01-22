@@ -20,8 +20,19 @@ class CameraFPVViewController: UIViewController {
     
     var adapter: VideoPreviewerAdapter?
     var needToSetMode = false
-    var operatorV2: DJIWaypointV2MissionOperator?
-    var waypointActionsV2 = [DJIWaypointV2Action]()
+    var droneModel: String {
+        guard let product = DJISDKManager.product() else {
+            return ""
+        }
+        
+        if product is DJIAircraft {
+            guard let aircraftModel = (product as! DJIAircraft).model else {
+                return ""
+            }
+            return aircraftModel
+        }
+        return ""
+    }
     var flightController: DJIFlightController? {
         guard let product = DJISDKManager.product() else {
             return nil
@@ -29,18 +40,20 @@ class CameraFPVViewController: UIViewController {
         
         if product is DJIAircraft {
             let flightController = (product as! DJIAircraft).flightController
-            flightController!.delegate = self
             return flightController
         }
         return nil
     }
     
+    var operatorV2: DJIWaypointV2MissionOperator?
+    var waypointActionsV2 = [DJIWaypointV2Action]()
+    
+    var missionControl: DJIMissionControl? {
+        return DJISDKManager.missionControl()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let camera = fetchCamera()
-        camera?.delegate = self
-        
         needToSetMode = true
         
         DJIVideoPreviewer.instance()?.start()
@@ -81,6 +94,7 @@ class CameraFPVViewController: UIViewController {
                     completion?()
                     return
                 }
+                camera.delegate = self
                 camera.getVideoStreamSource { (streamSource, error) in
                     if error == nil {
                         switch streamSource {
@@ -108,7 +122,6 @@ class CameraFPVViewController: UIViewController {
             } else { return }
         }
     }
-
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -124,21 +137,26 @@ class CameraFPVViewController: UIViewController {
             return
         }
         
-        if let rtkController = flightController!.rtk {
-            rtkController.delegate = self
-            rtkController.setEnabled(false) { [weak self] (error) in
-                if error == nil {
-                    print("aaaa: Set rtk success!")
-                } else {
-                    print("aaaa: Set rtk failed!")
-                }
-                self?.prepareWaypointV2MissionForM300 { (isCompleted) in
-                    if isCompleted {
-                        print("aaaa: preparedMission has completed!!")
+        if droneModel == DJIAircraftModelNameMatrice300RTK {
+            if let rtkController = flightController!.rtk {
+                rtkController.setEnabled(false) { [weak self] (error) in
+                    if error == nil {
+                        print("aaaa: Set rtk success!")
                     } else {
-                        print("aaaa: preparedMission has error!!")
+                        print("aaaa: Set rtk failed!")
+                    }
+                    self?.prepareWaypointV2MissionForM300 { (isCompleted) in
+                        if isCompleted {
+                            print("aaaa: preparedMission has completed!!")
+                        } else {
+                            print("aaaa: preparedMission has error!!")
+                        }
                     }
                 }
+            }
+        } else {
+            prepareTimeline { (isSucess) in
+                self.missionState.text = "Mission prepare success: \(isSucess)"
             }
         }
     }
@@ -206,17 +224,22 @@ class CameraFPVViewController: UIViewController {
     }
     
     @IBAction func startMissionBtnDidTap(sender: UIButton) {
-        guard operatorV2 != nil else {
-            print("operatorV2 is nil")
-            return
-        }
-        
-        operatorV2!.startMission { (error) in
-            if error == nil {
-                print("aaaa: Start mission success!!!")
-            } else {
-                print("aaaa: Start mission failed!!!")
+        if droneModel == DJIAircraftModelNameMatrice300RTK {
+            guard operatorV2 != nil else {
+                print("operatorV2 is nil")
+                return
             }
+            
+            operatorV2!.startMission { (error) in
+                if error == nil {
+                    print("aaaa: Start mission success!!!")
+                } else {
+                    print("aaaa: Start mission failed!!!")
+                }
+            }
+        } else {
+            guard let missionControl = missionControl else { return }
+            missionControl.startTimeline()
         }
     }
     
@@ -681,6 +704,90 @@ class CameraFPVViewController: UIViewController {
             }
         }
     }
+    
+    func prepareTimeline(completion: @escaping (Bool) -> ()) {
+        guard let missionControl = missionControl else {
+            completion(false)
+            return
+        }
+        
+        if missionControl.isTimelineRunning {
+            missionControl.stopTimeline()
+        }
+        missionControl.unscheduleEverything()
+        
+        let listCoords = [
+            CLLocationCoordinate2D(latitude: 36.290506, longitude: 139.455655),
+            CLLocationCoordinate2D(latitude: 36.290384, longitude: 139.455753),
+            CLLocationCoordinate2D(latitude: 36.290231, longitude: 139.455541),
+            CLLocationCoordinate2D(latitude: 36.290256, longitude: 139.455245),
+            CLLocationCoordinate2D(latitude: 36.290482, longitude: 139.455128),
+            CLLocationCoordinate2D(latitude: 36.290662, longitude: 139.455346),
+            CLLocationCoordinate2D(latitude: 36.290679, longitude: 139.455793),
+        ]
+        
+        let waypointMission = DJIMutableWaypointMission()
+        waypointMission.maxFlightSpeed = 5
+        waypointMission.autoFlightSpeed = 1
+        waypointMission.finishedAction = .noAction
+        waypointMission.headingMode = .auto
+        waypointMission.flightPathMode = .normal
+        waypointMission.rotateGimbalPitch = true
+        waypointMission.exitMissionOnRCSignalLost = true
+        waypointMission.gotoFirstWaypointMode = .safely
+        waypointMission.repeatTimes = 1
+        
+        var waypointReachedTriggers = [DJIWaypointReachedMissionTrigger]()
+        listCoords.enumerated().forEach { (index, coord) in
+            let waypoint = DJIWaypoint(coordinate: coord)
+            waypoint.altitude = 25
+            waypoint.heading = Int.random(in: -180...180)
+            waypoint.actionRepeatTimes = 1
+            waypoint.actionTimeoutInSeconds = 60
+            waypoint.turnMode = .clockwise
+            waypoint.gimbalPitch = Float.random(in: -80...0)
+            waypoint.add(DJIWaypointAction(actionType: .shootPhoto, param: 2))
+            waypointMission.add(waypoint)
+            
+            let waypointReachedTrigger = DJIWaypointReachedMissionTrigger()
+            waypointReachedTrigger.waypointIndex = index
+            waypointReachedTrigger.action = {
+                self.missionActionsState.text = "Reached waypoint index: \(index)"
+            }
+            waypointReachedTriggers.append(waypointReachedTrigger)
+        }
+        
+        let preparedMission = DJIWaypointMission(mission: waypointMission)
+        preparedMission.triggers = waypointReachedTriggers
+        let error = missionControl.scheduleElement(preparedMission)
+        if error != nil {
+            print("aaaa: Prepared mission has error: \(error!)")
+            completion(false)
+            return
+        }
+        missionControl.addListener(self) { (event, currentElement, error, info) in
+            var currentEvent: String = ""
+            let errorStr = error != nil ? error!.localizedDescription : ""
+            switch event {
+            case .started, .startError:
+                currentEvent = "Started" + errorStr
+            case .stopped, .stopError:
+                currentEvent = "Stopped" + errorStr
+            case .paused, .pauseError:
+                currentEvent = "Paused" + errorStr
+            case .resumed, .resumeError:
+                currentEvent = "Resumed" + errorStr
+            case .finished:
+                currentEvent = "Finished" + errorStr
+            case .unknown:
+                currentEvent = "Unknown" + errorStr
+            default:
+                break
+            }
+            self.missionState.text = "\(currentEvent)"
+        }
+        completion(true)
+    }
 }
 
 extension CameraFPVViewController {
@@ -732,58 +839,5 @@ extension CameraFPVViewController: DJICameraDelegate {
     
     func camera(_ camera: DJICamera, didUpdate storageState: DJICameraStorageState) {
         print("bbbb: storageState location: \(storageState.location)")
-    }
-}
-
-extension CameraFPVViewController: DJIFlightControllerDelegate {
-    func flightController(_ fc: DJIFlightController, didUpdate state: DJIFlightControllerState) {
-        //
-    }
-    
-    func flightController(_ fc: DJIFlightController, didUpdate imuState: DJIIMUState) {
-        //
-    }
-      
-    func flightController(_ fc: DJIFlightController, didUpdate information: DJIAirSenseSystemInformation) {
-        //
-    }
-    
-    func flightController(_ fc: DJIFlightController, didUpdate gravityCenterState: DJIGravityCenterState) {
-        //
-    }
-}
-
-extension CameraFPVViewController: DJIGimbalDelegate {
-    func gimbal(_ gimbal: DJIGimbal, didUpdate state: DJIGimbalState) {
-        //
-    }
-}
-
-extension CameraFPVViewController: DJIBatteryDelegate {
-    func battery(_ battery: DJIBattery, didUpdate state: DJIBatteryState) {
-        //
-    }
-}
-
-extension CameraFPVViewController: DJIRemoteControllerDelegate {
-    func remoteController(_ rc: DJIRemoteController, didUpdate batteryState: DJIRCBatteryState) {
-        //
-    }
-}
-
-extension CameraFPVViewController: DJIRTKDelegate {
-    func rtk(_ rtk: DJIRTK, didUpdate state: DJIRTKState) {
-        //
-    }
-}
-
-
-extension CameraFPVViewController: DJIRTKBaseStationDelegate {
-    func baseStation(_ baseStation: DJIRTKBaseStation, didUpdate state: DJIRTKBaseStationBatteryState) {
-        //
-    }
-    
-    func baseStation(_ baseStation: DJIRTKBaseStation, didUpdate state: DJIRTKBaseStationState) {
-        //
     }
 }
