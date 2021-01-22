@@ -749,6 +749,7 @@ class CameraFPVViewController: UIViewController {
             waypoint.add(DJIWaypointAction(actionType: .shootPhoto, param: 2))
             waypointMission.add(waypoint)
             
+            // MARK: - Add trigger for WaypointMission in Timeline
             let waypointReachedTrigger = DJIWaypointReachedMissionTrigger()
             waypointReachedTrigger.waypointIndex = index
             waypointReachedTrigger.action = {
