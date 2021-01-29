@@ -802,6 +802,18 @@ extension CameraFPVViewController {
         }
         return nil
     }
+    
+    func fetchRemoteController() -> DJIRemoteController? {
+        guard let product = DJISDKManager.product() else {
+            return nil
+        }
+        
+        if product is DJIAircraft {
+            let remoteController = (product as! DJIAircraft).remoteController
+            return remoteController
+        }
+        return nil
+    }
 }
 
 /**
@@ -840,5 +852,47 @@ extension CameraFPVViewController: DJICameraDelegate {
     
     func camera(_ camera: DJICamera, didUpdate storageState: DJICameraStorageState) {
         print("bbbb: storageState location: \(storageState.location)")
+    }
+}
+
+extension CameraFPVViewController: DJIRemoteControllerDelegate {
+    func remoteController(_ rc: DJIRemoteController, didUpdate gpsData: DJIRCGPSData) {
+        //
+    }
+    
+    func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
+        //
+    }
+    
+    func remoteController(_ rc: DJIRemoteController, didUpdate action: DJIRCButtonAction) {
+        //
+    }
+    
+    func remoteController(_ rc: DJIRemoteController, didUpdate progress: DJIRCCalibrationProgress) {
+        //
+    }
+    
+    func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCMasterSlaveState) {
+        //
+    }
+    
+    func remoteController(_ rc: DJIRemoteController, didUpdateRTKChannelEnabled enabled: Bool) {
+        //
+    }
+    
+    func remoteController(_ rc: DJIRemoteController, didUpdate batteryState: DJIRCBatteryState) {
+        //
+    }
+    
+    func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCFocusControllerState) {
+        //
+    }
+    
+    func remoteController(_ rc: DJIRemoteController, didReceiveGimbalControlRequestFromSlave information: DJIRCInformation) {
+        //
+    }
+    
+    func remoteController(_ rc: DJIRemoteController, didUpdateMultiDevicePairingState state: DJIRCMultiDeviceAggregationState) {
+        //
     }
 }

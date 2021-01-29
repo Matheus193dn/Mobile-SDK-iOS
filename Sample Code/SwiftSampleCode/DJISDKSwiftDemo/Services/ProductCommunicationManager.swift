@@ -15,7 +15,7 @@ class ProductCommunicationManager: NSObject {
     let enableBridgeMode = false
     
     // When enableBridgeMode is set to true, set this value to the IP of your bridge app.
-    let bridgeAppIP = "10.81.55.116"
+    let bridgeAppIP = ""//"172.16.0.204"
     
     func registerWithSDK() {
         let appKey = Bundle.main.object(forInfoDictionaryKey: SDK_APP_KEY_INFO_PLIST_KEY) as? String
