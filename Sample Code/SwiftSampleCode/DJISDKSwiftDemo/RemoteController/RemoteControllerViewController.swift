@@ -252,13 +252,24 @@ extension RemoteControllerViewController: DJIRemoteControllerDelegate {
     }
     
     func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCMasterSlaveState) {
-        let currentContent = debugTextView.text ?? ""
-        if state.mode == .master {
-            self.debugTextView.text = currentContent + "\n2.Index 0 - Master"
-        } else if state.mode == .slave {
-            self.debugTextView.text = currentContent + "\n2.Index 0 - Slave"
-        } else {
-            self.debugTextView.text = currentContent + "\n2.Index 0 - \(state.mode == .normal ? "Normal" : "Unknow")"
+        if rc.index == 0 {
+            let currentContent = debugTextView.text ?? ""
+            if state.mode == .master {
+                self.debugTextView.text = currentContent + "\n2.Index 0 - Master"
+            } else if state.mode == .slave {
+                self.debugTextView.text = currentContent + "\n2.Index 0 - Slave"
+            } else {
+                self.debugTextView.text = currentContent + "\n2.Index 0 - \(state.mode == .normal ? "Normal" : "Unknow")"
+            }
+        } else if rc.index == 1 {
+            let currentContent = debugTextView.text ?? ""
+            if state.mode == .master {
+                self.debugTextView.text = currentContent + "\n2.Index 1 - Master"
+            } else if state.mode == .slave {
+                self.debugTextView.text = currentContent + "\n2.Index 1 - Slave"
+            } else {
+                self.debugTextView.text = currentContent + "\n2.Index 1 - \(state.mode == .normal ? "Normal" : "Unknow")"
+            }
         }
     }
     
